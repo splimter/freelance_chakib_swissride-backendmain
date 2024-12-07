@@ -90,7 +90,7 @@ import riderOrderRoutes from './routes/ride_order';
 server.register(userRoutes, { prefix: '/api/v1/users' });
 server.register(riderOrderRoutes, { prefix: '/api/v1/rides' });
 
-server.listen({ host: "192.168.1.135", port: 8080 }, (err, address) => {
+server.listen({ host: configENV.HOST, port: parseInt(configENV.PORT, 10) }, (err, address) => {
     if (err) {
         console.error(err)
         process.exit(1)
