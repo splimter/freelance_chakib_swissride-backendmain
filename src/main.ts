@@ -28,7 +28,23 @@ const server = fastify(
 )
 
 // Register CORS
-server.register(fastifyCors, {origin: '*'});
+server.register(fastifyCors, {
+    origin: (origin, cb) => {
+        const hostname = new URL(origin).hostname
+        console.log({hostname})
+        if([
+        configENV.HOST,
+        'localhost',
+        'srcb.hop-taxi.ch',
+        'srcb.splimter.me'
+        ].includes(hostname)){
+            cb(null, true)
+            return
+        }
+
+        cb(new Error("Not allowed"), false)
+    }
+});
 // Register Compression
 server.register(fastifyCompress);
 // Register Helmet
