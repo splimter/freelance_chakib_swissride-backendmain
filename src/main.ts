@@ -31,7 +31,6 @@ const server = fastify(
 server.register(fastifyCors, {
     origin: (origin, cb) => {
         const hostname = new URL(origin).hostname
-        console.log({hostname})
         if(['localhost', 'hop-taxi.ch'].includes(hostname)){
             cb(null, true)
             return
