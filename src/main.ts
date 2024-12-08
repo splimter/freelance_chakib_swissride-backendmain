@@ -11,9 +11,16 @@ import {configENV} from "./utils";
 import {FST_JWT_AUTHORIZATION_TOKEN_EXPIRED, FST_JWT_NO_AUTHORIZATION_IN_HEADER, FST_JWT_AUTHORIZATION_TOKEN_INVALID} from "./consts/fastify_errors";
 import {TOKEN_EXPIRED, UNAUTHORIZED} from "./consts/client_errors";
 
-
 const logger = process.env.NODE_ENV === 'production' ? {
-    file: 'logs/app.log',
+//    file: 'logs/app.log',
+    transport: {
+        target: "pino-loki",
+        options: {
+            batching: true,
+            interval: 5,
+            host: 'http://localhost:3100/',
+        },
+    }
 } : {
     transport: { target: 'pino-pretty' },
 };
