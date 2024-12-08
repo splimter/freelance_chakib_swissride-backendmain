@@ -32,16 +32,16 @@ export default async function userRoutes (fastify: FastifyInstance) {
         const user: IUser = request.body as any;
         const userId = await UserServices.create(fastify, user);
         if (userId) {
-            reply.code(201).send({ id: userId._id });
+            return reply.code(201).send({ id: userId._id });
         } else {
-            reply.code(500).send({ error: 'Failed to add user' });
+            return reply.code(500).send({ error: 'Failed to add user' });
         }
     });
     fastify.get('/me', {
         preHandler: [fastify.authenticate]
     }, async (request: FastifyRequest, reply: FastifyReply) => {
         const user = request.user as IUser;
-        reply.send(user);
+        return reply.send(user);
     });
     fastify.delete('/logout', async (request: FastifyRequest, reply: FastifyReply) => {
         reply.clearCookie('sr_access_token')
