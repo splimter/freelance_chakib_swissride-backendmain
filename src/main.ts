@@ -13,13 +13,11 @@ import {TOKEN_EXPIRED, UNAUTHORIZED} from "./consts/client_errors";
 
 
 const logger = process.env.NODE_ENV === 'production' ? {
-    stream: rotatingFileStream({
-        filename: 'logs.log',
-        path: './logs',
-    })
+    file: 'logs/app.log',
 } : {
-    transport: {target: 'pino-pretty'},
-}
+    transport: { target: 'pino-pretty' },
+};
+
 const server = fastify(
     {
         disableRequestLogging: true,
@@ -31,7 +29,7 @@ const server = fastify(
 server.register(fastifyCors, {
     origin: (origin, cb) => {
         const hostname = new URL(origin).hostname
-        if(['localhost', 'hop-taxi.ch'].includes(hostname)){
+        if(['localhost', 'www.hop-taxi.ch'].includes(hostname)){
             cb(null, true)
             return
         }
