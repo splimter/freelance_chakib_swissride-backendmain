@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import UserServices from "../services/users";
 import {IUserLogin, IUser} from "../models/user.model";
 import {INVALID_CREDENTIAL} from "../consts/client_errors";
-import {sendWhatsAppMessage} from "../adapters/twilio_app_service";
+// import {sendWhatsAppMessage} from "../adapters/twilio_app_service";
 
 
 export default async function userRoutes (fastify: FastifyInstance) {
@@ -41,7 +41,7 @@ export default async function userRoutes (fastify: FastifyInstance) {
     fastify.get('/me', {
         preHandler: [fastify.authenticate]
     }, async (request: FastifyRequest, reply: FastifyReply) => {
-        await sendWhatsAppMessage()
+        // await sendWhatsAppMessage()
         const user = request.user as IUser;
         return reply.send(user);
     });
