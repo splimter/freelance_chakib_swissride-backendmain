@@ -4,7 +4,6 @@ import fastifyCompress from '@fastify/compress'
 import fastifyHelmet from '@fastify/helmet'
 import fastifyJWT from '@fastify/jwt'
 import fastifyCookie from '@fastify/cookie'
-import rotatingFileStream from 'pino-rotating-file-stream';
 import mongoDB from "./adapters/mongo";
 import * as process from "node:process";
 import {configENV} from "./utils";
@@ -12,7 +11,6 @@ import {FST_JWT_AUTHORIZATION_TOKEN_EXPIRED, FST_JWT_NO_AUTHORIZATION_IN_HEADER,
 import {TOKEN_EXPIRED, UNAUTHORIZED} from "./consts/client_errors";
 
 const logger = process.env.NODE_ENV === 'production' ? {
-//    file: 'logs/app.log',
     transport: {
         target: "pino-loki",
         options: {
