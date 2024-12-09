@@ -23,7 +23,6 @@ const RideOrderSchema = new mongoose.Schema({
     state: { type: String, required: true, default: RideOrderState.Pending }
 });
 
-
 export interface IRideOrder {
     state: RideOrderState;
     type: string;
