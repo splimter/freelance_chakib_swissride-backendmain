@@ -8,6 +8,7 @@ const saltRounds = 10;
 const UserServices = {
     create: async (fastify: FastifyInstance, user: IUser) => {
         try {
+            user.password = await UserServices.generatePassword(user.password);
             return await UserRepository.create(user);
         } catch (error) {
             fastify.log.error(error);
@@ -17,6 +18,14 @@ const UserServices = {
     getByUsername: async (fastify: FastifyInstance, username: string) => {
         try {
             return await UserRepository.getBy("username", username);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
+    },
+    getById: async (fastify: FastifyInstance, id: string) => {
+        try {
+            return await UserRepository.getBy("_id", id);
         } catch (error) {
             fastify.log.error(error);
             return null;

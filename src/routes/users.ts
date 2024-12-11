@@ -16,7 +16,6 @@ export default async function userRoutes (fastify: FastifyInstance) {
         }
 
         if(await UserServices.comparePassword(userPayload.password, userResult.password)) {
-            console.log({userResult: userResult._id.toHexString()})
             const access_token = fastify.jwt.sign({
                 id: userResult._id.toHexString()
             }, {
@@ -29,7 +28,9 @@ export default async function userRoutes (fastify: FastifyInstance) {
             code: INVALID_CREDENTIAL
         })
     });
-    fastify.post('/register', async (request: FastifyRequest, reply: FastifyReply) => {
+    fastify.post('/register',{
+        preHandler: [fastify.authenticate, fastify.hasRole(['super_admin'])]
+    }, async (request: FastifyRequest, reply: FastifyReply) => {
         const user: IUser = request.body as any;
         const userId = await UserServices.create(fastify, user);
         if (userId) {
@@ -41,7 +42,6 @@ export default async function userRoutes (fastify: FastifyInstance) {
     fastify.get('/me', {
         preHandler: [fastify.authenticate]
     }, async (request: FastifyRequest, reply: FastifyReply) => {
-        // await sendWhatsAppMessage()
         const user = request.user as IUser;
         return reply.send(user);
     });

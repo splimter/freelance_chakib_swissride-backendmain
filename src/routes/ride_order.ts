@@ -6,7 +6,8 @@ import {INVALID_RECORD, INVALID_REQ_PAYLOAD, NO_RECORD} from "../consts/client_e
 
 
 const riderOrderRoutes = async (fastify: FastifyInstance) => {
-    fastify.get('/', { preHandler: [fastify.authenticate] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    fastify.get('/', { preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])] },
+        async (request: FastifyRequest, reply: FastifyReply) => {
         try {
             const rideOrders = await RideOrderService.getAll(fastify);
             return reply.send(rideOrders);
@@ -16,7 +17,7 @@ const riderOrderRoutes = async (fastify: FastifyInstance) => {
     });
     fastify.get(
         '/:id',
-        { preHandler: [fastify.authenticate] },
+        { preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])] },
         async (request: FastifyRequest, reply: FastifyReply) => {
             const { id } = request.params as { id: string };
 
@@ -49,7 +50,7 @@ const riderOrderRoutes = async (fastify: FastifyInstance) => {
     fastify.post(
         '/',
         {
-            preHandler: [fastify.authenticate]
+            preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])]
         },
         async (request: FastifyRequest, reply: FastifyReply) => {
             const rideOrder: IRideOrder = request.body as any;
@@ -63,7 +64,7 @@ const riderOrderRoutes = async (fastify: FastifyInstance) => {
     fastify.post(
         '/state',
         {
-            preHandler: [fastify.authenticate]
+            preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])]
         },
         async (request: FastifyRequest, reply: FastifyReply) => {
             const { id, state } = request.body as { id: string, state: RideOrderState };
