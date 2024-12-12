@@ -92,8 +92,7 @@ server.decorate("authenticate", async function(request, reply) {
 
 server.decorate("hasRole", function(roles: string[]) {
     return async function(request, reply: any) {
-        const user = request.user;
-        if (!roles.includes(user.role)) {
+        if (!roles.includes(request.user._doc.role)) {
             return reply.code(401).send({
                 code: UNAUTHORIZED
             });

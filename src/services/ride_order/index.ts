@@ -1,7 +1,6 @@
-import {FastifyInstance} from 'fastify';
+import { FastifyInstance } from 'fastify';
 import RideOrderRepository from "../../repositories/ride_order";
-import {IRideOrder, RideOrderState} from "../../models/ride_order.model";
-
+import { IRideOrder, RideOrderState } from "../../models/ride_order.model";
 
 const RideOrderService = {
     getAll: async (fastify: FastifyInstance) => {
@@ -39,7 +38,31 @@ const RideOrderService = {
             fastify.log.error(error);
             return null;
         }
+    },
+    update: async (fastify: FastifyInstance, id: string, rideOrder: IRideOrder) => {
+        try {
+            const existingRideOrder = await RideOrderRepository.getById(id);
+            if (!existingRideOrder) {
+                return null;
+            }
+            return await RideOrderRepository.update(id, rideOrder);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
+    },
+    delete: async (fastify: FastifyInstance, id: string) => {
+        try {
+            const existingRideOrder = await RideOrderRepository.getById(id);
+            if (!existingRideOrder) {
+                return null;
+            }
+            return await RideOrderRepository.delete(id);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
     }
-}
+};
 
 export default RideOrderService;

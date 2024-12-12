@@ -27,6 +27,22 @@ const RideOrderRepository = {
             return null;
         }
     },
+    update: async (id: string, entity: IRideOrder) => {
+        try {
+            return await RideOrder.findByIdAndUpdate(id, entity, { new: true });
+        } catch (error) {
+            console.log({ error });
+            return null;
+        }
+    },
+    delete: async (id: string) => {
+        try {
+            return await RideOrder.findByIdAndDelete(id);
+        } catch (error) {
+            console.log({ error });
+            return null;
+        }
+    },
     updateState: async (id: string, state: string) => {
         try {
             return await RideOrder.findByIdAndUpdate(id, {state}, {new: true});

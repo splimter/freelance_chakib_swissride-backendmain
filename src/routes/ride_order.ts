@@ -60,7 +60,77 @@ const riderOrderRoutes = async (fastify: FastifyInstance) => {
             } else {
                 return reply.code(500).send({ error: 'Failed to add ride' });
             }
-    });
+    }
+    );
+    fastify.put(
+        '/:id',
+        {
+            preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])]
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const { id } = request.params as { id: string };
+            const rideOrder: IRideOrder = request.body as any;
+
+            if (!Types.ObjectId.isValid(id)) {
+                return reply.code(400).send({
+                    code: INVALID_REQ_PAYLOAD,
+                    error: 'Invalid ride order ID'
+                });
+            }
+
+            try {
+                const updatedRideOrder = await RideOrderService.update(fastify, id, rideOrder);
+                if (updatedRideOrder) {
+                    return reply.code(200).send(updatedRideOrder);
+                } else {
+                    return reply.code(404).send({
+                        code: NO_RECORD,
+                        error: 'Ride order not found'
+                    });
+                }
+            } catch (error) {
+                fastify.log.error(error);
+                return reply.code(500).send({
+                    code: INVALID_RECORD,
+                    error: 'Failed to update ride order'
+                });
+            }
+        }
+    );
+    fastify.delete(
+        '/:id',
+        {
+            preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])]
+        },
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            const { id } = request.params as { id: string };
+
+            if (!Types.ObjectId.isValid(id)) {
+                return reply.code(400).send({
+                    code: INVALID_REQ_PAYLOAD,
+                    error: 'Invalid ride order ID'
+                });
+            }
+
+            try {
+                const deletedRideOrder = await RideOrderService.delete(fastify, id);
+                if (deletedRideOrder) {
+                    return reply.code(200).send({});
+                } else {
+                    return reply.code(404).send({
+                        code: NO_RECORD,
+                        error: 'Ride order not found'
+                    });
+                }
+            } catch (error) {
+                fastify.log.error(error);
+                return reply.code(500).send({
+                    code: INVALID_RECORD,
+                    error: 'Failed to delete ride order'
+                });
+            }
+        }
+    );
     fastify.post(
         '/state',
         {
