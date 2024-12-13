@@ -1,12 +1,15 @@
 import DriverRepository from '../../repositories/drivers';
+import RideOrderRepository from '../../repositories/ride_order';
 import { IDriver } from '../../models/driver.model';
 import bcrypt from "bcrypt";
+import {IRideOrder} from "../../models/ride_order.model";
 
 const saltRounds = 15;
 
 const DriverService = {
     createDriver: async (driverData: IDriver) => {
         driverData.password = await DriverService.generatePassword(driverData.password);
+        driverData.role = 'driver';
         return await DriverRepository.create(driverData);
     },
     getDriverById: async (id: string) => {
@@ -19,6 +22,9 @@ const DriverService = {
         return await DriverRepository.getAll();
     },
     updateDriver: async (id: string, driverData: IDriver) => {
+        if (driverData.password) {
+            driverData.password = await DriverService.generatePassword(driverData.password);
+        }
         return await DriverRepository.update(id, driverData);
     },
     deleteDriver: async (id: string) => {
@@ -30,6 +36,26 @@ const DriverService = {
     },
     comparePassword: async (password: string, hash: string) => {
         return bcrypt.compare(password ,hash);
+    },
+    myRides: async (id: string) => {
+        const primary = await RideOrderRepository.getAllBy("primaryDriver", id);
+        const secondary = await RideOrderRepository.getAllBy("secondaryDriver", id);
+        const aux = await RideOrderRepository.getAllBy("auxDriver", id);
+        return  {
+            primary,
+            secondary,
+            aux
+        }
+    },
+    setEndPrice: async (userId: string, rideId: string, price: string) => {
+        const ride: any = await RideOrderRepository.getById(rideId);
+        if (ride === null) {
+            return null;
+        }
+        if (ride.primaryDriver === userId.toString() || ride.secondaryDriver === userId.toString() || ride.auxDriver === userId.toString()) {
+            ride.endPrice = price;
+            return await RideOrderRepository.update(rideId, ride);
+        }
     }
 };
 

@@ -8,16 +8,16 @@ import {INVALID_CREDENTIAL} from "../consts/client_errors";
 export default async function userRoutes (fastify: FastifyInstance) {
     fastify.post('/login', async (request: FastifyRequest, reply: FastifyReply) => {
         const userPayload: IUserLogin = request.body as any
-        const userResult = await UserServices.getByUsername(fastify, userPayload.username)
+        const userResult = await UserServices.getByUsername(fastify, userPayload.username, true)
         if (userResult === null) {
             return reply.code(401).send({
                 code: INVALID_CREDENTIAL
             })
         }
-
         if(await UserServices.comparePassword(userPayload.password, userResult.password)) {
             const access_token = fastify.jwt.sign({
-                id: userResult._id.toHexString()
+                id: userResult._id.toHexString(),
+                userType: "admin"
             }, {
                 expiresIn: '30d'
             })
@@ -27,6 +27,11 @@ export default async function userRoutes (fastify: FastifyInstance) {
         return reply.code(401).send({
             code: INVALID_CREDENTIAL
         })
+    });
+    fastify.delete('/logout', async (request: FastifyRequest, reply: FastifyReply) => {
+        reply.clearCookie('sr_access_token')
+
+        return reply.send({ message: 'Logout successful' })
     });
     fastify.post('/register',{
         preHandler: [fastify.authenticate, fastify.hasRole(['super_admin'])]
@@ -39,16 +44,30 @@ export default async function userRoutes (fastify: FastifyInstance) {
             return reply.code(400).send({ error: 'Failed to add user' });
         }
     });
+    fastify.put(
+        '/:id',
+        { preHandler: [fastify.authenticate] },
+        async (request: FastifyRequest<{ Params: { id: string }, Body: IUser }>, reply: FastifyReply) => {
+            try {
+                const userId = request.params.id;
+                const user = request.body;
+                const result = await UserServices.update(fastify, userId, user);
+
+                if (result.error === true) {
+                    return reply.status(404).send({ message: 'Failed to update a user!', error: result });
+                } else {
+                    return reply.send({ message: 'User updated successfully' });
+                }
+            } catch (error) {
+                return reply.status(500).send(error);
+            }
+        }
+    );
     fastify.get('/me', {
-        preHandler: [fastify.authenticate]
+        preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])]
     }, async (request: FastifyRequest, reply: FastifyReply) => {
         const user = request.user as IUser;
         return reply.send(user);
-    });
-    fastify.delete('/logout', async (request: FastifyRequest, reply: FastifyReply) => {
-        reply.clearCookie('sr_access_token')
-
-        return reply.send({ message: 'Logout successful' })
     });
 
     fastify.delete(

@@ -2,9 +2,13 @@ import User, {IUser} from "../../models/user.model";
 
 
 const UserRepository = {
-    getBy: async (field: string, value: string) => {
+    getBy: async (field: string, value: string, withPassword=false) => {
         try {
-            return await User.findOne({[field as any]: value}).select('-password');
+            const req: any = User.findOne({[field as any]: value});
+            if (withPassword === false){
+                req.select('-password');
+            }
+            return await req;
         } catch (error) {
             console.log({error})
             return null;
@@ -25,6 +29,17 @@ const UserRepository = {
         } catch (error) {
             console.log({error})
             return null;
+        }
+    },
+    updateById: async (id: string, entity: IUser) => {
+        try {
+            return await User.findByIdAndUpdate(id, entity, {new: true});
+        } catch (error) {
+            return {
+                error: true,
+                codeName: error.codeName,
+                keyValue: error.keyValue,
+            };
         }
     },
     deleteById: async (id: string) => {

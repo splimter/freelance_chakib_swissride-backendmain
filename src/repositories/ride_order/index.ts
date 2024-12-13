@@ -1,7 +1,26 @@
 import RideOrder , {IRideOrder} from "../../models/ride_order.model";
+import User from "../../models/user.model";
 
 
 const RideOrderRepository = {
+    getBy: async (field: string, value: string) => {
+        try {
+            const req: any = RideOrder.findOne({[field as any]: value});
+            return await req;
+        } catch (error) {
+            console.log({error})
+            return null;
+        }
+    },
+    getAllBy: async (field: string, value: string) => {
+        try {
+            const req: any = RideOrder.find({[field as any]: value});
+            return await req;
+        } catch (error) {
+            console.log({error})
+            return null;
+        }
+    },
     getAll: async () => {
         try {
             return await RideOrder.find();

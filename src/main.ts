@@ -13,6 +13,7 @@ import userRoutes from './routes/users';
 import riderOrderRoutes from './routes/ride_order';
 import UserServices from "./services/users";
 import driverRoutes from "./routes/drivers";
+import DriverServices from "./services/drivers";
 
 
 const logger = process.env.NODE_ENV === 'production' ? {
@@ -66,7 +67,13 @@ server.register(fastifyCookie, {
 server.decorate("authenticate", async function(request, reply) {
     try {
         const x = await request.jwtVerify()
-        const user = await UserServices.getById(server, x.id)
+        let user = null;
+        if (x.userType === 'admin') {
+            user = await UserServices.getById(server, x.id)
+        } else if (x.userType === 'driver') {
+            user = await DriverServices.getDriverById(x.id)
+        }
+
         if (user === null) {
             return reply.code(401).send({
                 code: UNAUTHORIZED

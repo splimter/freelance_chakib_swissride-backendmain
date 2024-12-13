@@ -15,9 +15,9 @@ const UserServices = {
             return null;
         }
     },
-    getByUsername: async (fastify: FastifyInstance, username: string) => {
+    getByUsername: async (fastify: FastifyInstance, username: string, withPassword=false) => {
         try {
-            return await UserRepository.getBy("username", username);
+            return await UserRepository.getBy("username", username, withPassword);
         } catch (error) {
             fastify.log.error(error);
             return null;
@@ -29,6 +29,17 @@ const UserServices = {
         } catch (error) {
             fastify.log.error(error);
             return null;
+        }
+    },
+    update: async (fastify: FastifyInstance, id: string, user: IUser) => {
+        try {
+            if (user.password) {
+                user.password = await UserServices.generatePassword(user.password);
+            }
+            return await UserRepository.updateById(id, user);
+        } catch (error) {
+            fastify.log.error(error);
+            return error;
         }
     },
     delete: async (fastify: FastifyInstance, id: string) => {

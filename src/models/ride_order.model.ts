@@ -21,7 +21,10 @@ const RideOrderSchema = new mongoose.Schema({
     notes: { type: String },
     sendVia: { type: String },
     endPrice: { type: String },
-    state: { type: String, required: true, default: RideOrderState.Pending }
+    state: { type: String, required: true, default: RideOrderState.Pending },
+    primaryDriver: { type: String },
+    secondaryDriver: { type: String },
+    auxDriver: { type: String },
 });
 
 export interface IRideOrder {
@@ -37,6 +40,9 @@ export interface IRideOrder {
     notes?: string;
     endPrice?: string;
     sendVia: 'email' | 'whatsapp' | null;
+    primaryDriver?: string;
+    secondaryDriver?: string;
+    auxDriver?: string;
 }
 
 const RideOrder = mongoose.model('RideOrders', RideOrderSchema);

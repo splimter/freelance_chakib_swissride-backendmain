@@ -134,7 +134,7 @@ const riderOrderRoutes = async (fastify: FastifyInstance) => {
     fastify.post(
         '/state',
         {
-            preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])]
+            preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator', 'driver'])]
         },
         async (request: FastifyRequest, reply: FastifyReply) => {
             const { id, state } = request.body as { id: string, state: RideOrderState };
