@@ -2,6 +2,8 @@ import {FastifyInstance} from 'fastify';
 import UserRepository from "../../repositories/users";
 import {IUser} from "../../models/user.model";
 import bcrypt from "bcrypt";
+import {sendEmailAccountCreation} from "../../adapters/sendgrid_app_service";
+import {sendWhatsAppWelcomeMessage} from "../../adapters/whatsapp_app_service";
 
 const saltRounds = 10;
 
@@ -61,8 +63,12 @@ const UserServices = {
     createOperator: async(fastify: FastifyInstance, body: IUser)=> {
         try {
             body.role = "operator";
+            const old_pwd = body.password;
             body.password = await UserServices.generatePassword(body.password);
-            return await UserRepository.create(body);
+            const response: any = await UserRepository.create(body);
+            response.emailStatus = sendEmailAccountCreation(body.email, body.username, old_pwd);
+            await sendWhatsAppWelcomeMessage(body.phone_number);
+            return response;
         } catch (error) {
             fastify.log.error(error);
             return null;

@@ -1,16 +1,21 @@
 import DriverRepository from '../../repositories/drivers';
 import RideOrderRepository from '../../repositories/ride_order';
-import { IDriver } from '../../models/driver.model';
+import {IDriver} from '../../models/driver.model';
 import bcrypt from "bcrypt";
-import {IRideOrder} from "../../models/ride_order.model";
+import {sendEmailAccountCreation} from "../../adapters/sendgrid_app_service";
+import {sendWhatsAppWelcomeMessage} from "../../adapters/whatsapp_app_service";
 
 const saltRounds = 15;
 
 const DriverService = {
     createDriver: async (driverData: IDriver) => {
+        const oldPassword = driverData.password;
         driverData.password = await DriverService.generatePassword(driverData.password);
         driverData.role = 'driver';
-        return await DriverRepository.create(driverData);
+        const driver: any = await DriverRepository.create(driverData);
+        driver.emailStatus = sendEmailAccountCreation(driverData.email, driverData.username, oldPassword);
+        await sendWhatsAppWelcomeMessage(driverData.phone_number);
+        return driver;
     },
     getDriverById: async (id: string) => {
         return await DriverRepository.getBy('_id',id);
