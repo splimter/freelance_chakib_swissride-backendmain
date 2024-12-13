@@ -20,6 +20,7 @@ const RideOrderSchema = new mongoose.Schema({
     vehicle: { type: String },
     notes: { type: String },
     sendVia: { type: String },
+    endPrice: { type: String },
     state: { type: String, required: true, default: RideOrderState.Pending }
 });
 
@@ -34,6 +35,7 @@ export interface IRideOrder {
     goingto: string;
     vehicle?: string;
     notes?: string;
+    endPrice?: string;
     sendVia: 'email' | 'whatsapp' | null;
 }
 

@@ -5,23 +5,21 @@ const UserSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true },
     phone_number: { type: String, required: true },
-    password: { type: String, required: true },
-    role: { type: String, required: true }
+    password: { type: String, required: true }
 });
 
-export interface IUser {
+export interface IDriver {
     username: string;
     name: string;
     email: string;
     phone_number: string;
     password: string;
-    role: string;
 }
-export interface IUserLogin {
+export interface IDriverLogin {
     username: string;
     password: string;
 }
 
-const User = mongoose.model('User', UserSchema);
+const Driver = mongoose.model('Driver', UserSchema);
 
-export default User;
+export default Driver;

@@ -12,6 +12,7 @@ import {TOKEN_EXPIRED, UNAUTHENTICATED, UNAUTHORIZED} from "./consts/client_erro
 import userRoutes from './routes/users';
 import riderOrderRoutes from './routes/ride_order';
 import UserServices from "./services/users";
+import driverRoutes from "./routes/drivers";
 
 
 const logger = process.env.NODE_ENV === 'production' ? {
@@ -127,6 +128,7 @@ server.addHook('onSend', function (_request, reply, payload, next) {
 
 server.register(userRoutes, { prefix: '/api/v1/users' });
 server.register(riderOrderRoutes, { prefix: '/api/v1/rides' });
+server.register(driverRoutes, { prefix: '/api/v1/drivers' });
 
 server.listen({ host: configENV.HOST, port: parseInt(configENV.PORT, 10) }, (err, address) => {
     if (err) {

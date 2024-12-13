@@ -31,12 +31,39 @@ const UserServices = {
             return null;
         }
     },
+    delete: async (fastify: FastifyInstance, id: string) => {
+        try {
+            const result = await UserRepository.deleteById(id);
+            return result;
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
+    },
     generatePassword: async (password: string) => {
         const salt = await bcrypt.genSalt(saltRounds);
         return await bcrypt.hash(password, salt);
     },
     comparePassword: async (password: string, hash: string) => {
         return bcrypt.compare(password ,hash);
+    },
+    createOperator: async(fastify: FastifyInstance, body: IUser)=> {
+        try {
+            body.role = "operator";
+            body.password = await UserServices.generatePassword(body.password);
+            return await UserRepository.create(body);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
+    },
+    getAllOperators: async (fastify: FastifyInstance)=> {
+        try {
+            return await UserRepository.getAllBy("role", "operator");
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
     }
 }
 
