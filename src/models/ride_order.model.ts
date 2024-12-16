@@ -45,15 +45,6 @@ export interface IRideOrder {
     auxDriver?: string;
 }
 
-export interface IRideOrderWhatsapp {
-    name: string;
-    date: string;
-    pickup: string;
-    goingto: string;
-    email?: string;
-    phone: string;
-}
-
 const RideOrder = mongoose.model('RideOrders', RideOrderSchema);
 
 export default RideOrder;

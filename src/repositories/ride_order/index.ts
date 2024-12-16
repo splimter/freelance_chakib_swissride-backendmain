@@ -18,7 +18,7 @@ const RideOrderRepository = {
         const rideOrder = new RideOrder(entity);
         return await rideOrder.save();
     },
-    getById: async (id: string) => {
+    getById: async (id: string): Promise<IRideOrder> => {
         return RideOrder.findById(id);
     },
     update: async (id: string, entity: IRideOrder) => {

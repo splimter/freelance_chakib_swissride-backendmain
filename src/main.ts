@@ -71,7 +71,7 @@ server.decorate("authenticate", async function(request, reply) {
         if (x.userType === 'admin') {
             user = await UserServices.getById(server, x.id)
         } else if (x.userType === 'driver') {
-            user = await DriverServices.getDriverById(x.id)
+            user = await DriverServices.getDriverById(server, x.id)
         }
 
         if (user === null) {

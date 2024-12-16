@@ -1,12 +1,13 @@
 import * as dotenv from 'dotenv';
 import {configENV} from "../utils";
 import {IUserLogin} from "../models/user.model";
-import {IRideOrderWhatsapp} from "../models/ride_order.model";
+import {IRideOrder} from "../models/ride_order.model";
 
 
 const WHATSAPP_API_URL = 'https://graph.facebook.com/v21.0';
 const TOKEN = configENV.WHATSAPP_API_TOKEN;
 const PHONE_NUMBER_ID = configENV.PHONE_NUMBER_ID;
+
 // const RECIPIENT_NUMBER = "+351933715426";
 
 export async function sendWhatsAppWelcomeMessage(phone_number: string): Promise<void> {
@@ -113,7 +114,8 @@ export async function sendWhatsAppCredentialsMessage(phone_number: string, name:
         console.error('Error sending message:', error.message);
     }
 }
-export async function sendWhatsAppNewRideOrderMessage(phone_number: string, driverUsername: string, order: IRideOrderWhatsapp): Promise<void> {
+
+export async function sendWhatsAppNewRideOrderMessage(phone_number: string, driverUsername: string, order: IRideOrder): Promise<void> {
     try {
         const url = `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`;
         if (!phone_number.startsWith('+')) {
@@ -142,7 +144,15 @@ export async function sendWhatsAppNewRideOrderMessage(phone_number: string, driv
                             },
                             {
                                 "type": "text",
-                                "text": `${order.name} (Phone: ${order.phone}) (Email:${order.email})`
+                                "text": order.fullname
+                            },
+                            {
+                                "type": "text",
+                                "text": order.phone
+                            },
+                            {
+                                "type": "text",
+                                "text": order.email
                             },
                             {
                                 "type": "text",
@@ -155,6 +165,106 @@ export async function sendWhatsAppNewRideOrderMessage(phone_number: string, driv
                             {
                                 "type": "text",
                                 "text": order.date
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+        console.log({payload: payload.template.components[0].parameters});
+        const headers = {
+            Authorization: `Bearer ${TOKEN}`,
+            'Content-Type': 'application/json',
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('Message sent successfully:', data);
+    } catch (error) {
+        console.error('Error sending message:', error.message);
+    }
+}
+
+export async function sendWhatsAppUpdateRideOrderMessage(
+    phone_number: string, driverUsername: string,
+    oldOrder: IRideOrder,
+    newOrder: IRideOrder,
+): Promise<void> {
+    try {
+        const url = `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`;
+        if (!phone_number.startsWith('+')) {
+            if (phone_number.startsWith('0')) {
+                phone_number = phone_number.substring(1);
+            }
+            phone_number = `+41${phone_number}`;
+        }
+
+        const payload = {
+            "messaging_product": "whatsapp",
+            "to": phone_number,
+            "type": "template",
+            "template": {
+                "name": "hoptaxiupdateorder",
+                "language": {
+                    "code": "en"
+                },
+                "components": [
+                    {
+                        "type": "body",
+                        "parameters": [
+                            {
+                                "type": "text",
+                                "text": driverUsername
+                            },
+                            {
+                                "type": "text",
+                                "text": oldOrder.fullname
+                            },
+                            {
+                                "type": "text",
+                                "text": oldOrder.phone
+                            },
+                            {
+                                "type": "text",
+                                "text": newOrder.phone
+                            },
+                            {
+                                "type": "text",
+                                "text": oldOrder.email
+                            },
+                            {
+                                "type": "text",
+                                "text": newOrder.email
+                            },
+                            {
+                                "type": "text",
+                                "text": oldOrder.pickup
+                            }, {
+                                "type": "text",
+                                "text": newOrder.pickup
+                            },
+                            {
+                                "type": "text",
+                                "text": oldOrder.goingto
+                            }, {
+                                "type": "text",
+                                "text": newOrder.goingto
+                            },
+                            {
+                                "type": "text",
+                                "text": oldOrder.date
+                            }, {
+                                "type": "text",
+                                "text": newOrder.date
                             }
                         ]
                     }
@@ -182,6 +292,7 @@ export async function sendWhatsAppNewRideOrderMessage(phone_number: string, driv
         console.error('Error sending message:', error.message);
     }
 }
+
 
 // Usage
 // sendWhatsAppMessage('Hello, this is a message from your Node.js application!');

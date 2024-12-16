@@ -10,61 +10,111 @@ const saltRounds = 15;
 
 const DriverService = {
     createDriver: async (fastify: FastifyInstance, driverData: IDriver) => {
-        const oldPassword = driverData.password;
-        driverData.password = await DriverService.generatePassword(fastify, driverData.password);
-        driverData.role = 'driver';
-        const driver: any = await DriverRepository.create(driverData);
-        driver.emailStatus = sendEmailAccountCreation(driverData.email, driverData.username, oldPassword);
-        await sendWhatsAppWelcomeMessage(driverData.phone_number);
-        await sendWhatsAppCredentialsMessage(driverData.phone_number, driverData.name, {
-            username: driverData.username,
-            password: oldPassword
-        });
-        return driver;
+        try {
+            const oldPassword = driverData.password;
+            driverData.password = await DriverService.generatePassword(fastify, driverData.password);
+            driverData.role = 'driver';
+            const driver: any = await DriverRepository.create(driverData);
+            driver.emailStatus = sendEmailAccountCreation(driverData.email, driverData.username, oldPassword);
+            await sendWhatsAppWelcomeMessage(driverData.phone_number);
+            await sendWhatsAppCredentialsMessage(driverData.phone_number, driverData.name, {
+                username: driverData.username,
+                password: oldPassword
+            });
+            return driver;
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
     },
     getDriverById: async (fastify: FastifyInstance, id: string) => {
-        return await DriverRepository.getBy('_id',id);
+        try {
+            return await DriverRepository.getBy('_id', id);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
     },
     getByUsername: async (fastify: FastifyInstance, username: string) => {
-        return await DriverRepository.getBy('username', username);
+        try {
+            return await DriverRepository.getBy('username', username);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
     },
     getAllDrivers: async (fastify: FastifyInstance, ) => {
-        return await DriverRepository.getAll();
+        try {
+            return await DriverRepository.getAll();
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
     },
     updateDriver: async (fastify: FastifyInstance, id: string, driverData: IDriver) => {
-        if (driverData.password) {
-            driverData.password = await DriverService.generatePassword(fastify, driverData.password);
+        try {
+            if (driverData.password) {
+                driverData.password = await DriverService.generatePassword(fastify, driverData.password);
+            }
+            return await DriverRepository.update(id, driverData);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
         }
-        return await DriverRepository.update(id, driverData);
     },
     deleteDriver: async (fastify: FastifyInstance, id: string) => {
-        return await DriverRepository.delete(id);
+        try {
+            return await DriverRepository.delete(id);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
     },
     generatePassword: async (fastify: FastifyInstance, password: string) => {
-        const salt = await bcrypt.genSalt(saltRounds);
-        return await bcrypt.hash(password, salt);
+        try {
+            const salt = await bcrypt.genSalt(saltRounds);
+            return await bcrypt.hash(password, salt);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
     },
     comparePassword: async (fastify: FastifyInstance, password: string, hash: string) => {
-        return bcrypt.compare(password ,hash);
+        try {
+            return bcrypt.compare(password, hash);
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
+        }
     },
     myRides: async (fastify: FastifyInstance, id: string) => {
-        const primary = await RideOrderRepository.getAllBy("primaryDriver", id);
-        const secondary = await RideOrderRepository.getAllBy("secondaryDriver", id);
-        const aux = await RideOrderRepository.getAllBy("auxDriver", id);
-        return  {
-            primary,
-            secondary,
-            aux
+        try {
+            const primary = await RideOrderRepository.getAllBy("primaryDriver", id);
+            const secondary = await RideOrderRepository.getAllBy("secondaryDriver", id);
+            const aux = await RideOrderRepository.getAllBy("auxDriver", id);
+            return {
+                primary,
+                secondary,
+                aux
+            }
+        } catch (error) {
+            fastify.log.error(error);
+            return null;
         }
     },
     setEndPrice: async (fastify: FastifyInstance, userId: string, rideId: string, price: string) => {
-        const ride: any = await RideOrderRepository.getById(rideId);
-        if (ride === null) {
+        try {
+            const ride: any = await RideOrderRepository.getById(rideId);
+            if (ride === null) {
+                return null;
+            }
+            if (ride.primaryDriver === userId.toString() || ride.secondaryDriver === userId.toString() || ride.auxDriver === userId.toString()) {
+                ride.endPrice = price;
+                return await RideOrderRepository.update(rideId, ride);
+            }
+        } catch (error) {
+            fastify.log.error(error);
             return null;
-        }
-        if (ride.primaryDriver === userId.toString() || ride.secondaryDriver === userId.toString() || ride.auxDriver === userId.toString()) {
-            ride.endPrice = price;
-            return await RideOrderRepository.update(rideId, ride);
         }
     }
 };
