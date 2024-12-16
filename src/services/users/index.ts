@@ -3,7 +3,7 @@ import UserRepository from "../../repositories/users";
 import {IUser} from "../../models/user.model";
 import bcrypt from "bcrypt";
 import {sendEmailAccountCreation} from "../../adapters/sendgrid_app_service";
-import {sendWhatsAppWelcomeMessage} from "../../adapters/whatsapp_app_service";
+import {sendWhatsAppCredentialsMessage, sendWhatsAppWelcomeMessage} from "../../adapters/whatsapp_app_service";
 
 const saltRounds = 10;
 
@@ -46,8 +46,7 @@ const UserServices = {
     },
     delete: async (fastify: FastifyInstance, id: string) => {
         try {
-            const result = await UserRepository.deleteById(id);
-            return result;
+            return await UserRepository.deleteById(id);
         } catch (error) {
             fastify.log.error(error);
             return null;
@@ -63,11 +62,15 @@ const UserServices = {
     createOperator: async(fastify: FastifyInstance, body: IUser)=> {
         try {
             body.role = "operator";
-            const old_pwd = body.password;
+            const oldPassword = body.password;
             body.password = await UserServices.generatePassword(body.password);
             const response: any = await UserRepository.create(body);
-            response.emailStatus = sendEmailAccountCreation(body.email, body.username, old_pwd);
+            response.emailStatus = sendEmailAccountCreation(body.email, body.username, oldPassword);
             await sendWhatsAppWelcomeMessage(body.phone_number);
+            await sendWhatsAppCredentialsMessage(body.phone_number, body.name, {
+                username: body.username,
+                password: oldPassword
+            });
             return response;
         } catch (error) {
             fastify.log.error(error);

@@ -3,20 +3,20 @@ import DriverService from '../services/drivers';
 import {IDriver, IDriverLogin} from '../models/driver.model';
 import {INVALID_CREDENTIAL} from "../consts/client_errors";
 
-async function driverRoutes(server: FastifyInstance) {
-    server.post(
+async function driverRoutes(fastify: FastifyInstance) {
+    fastify.post(
         '/login',
         async (request: FastifyRequest<{ Body: IDriverLogin }>, reply: FastifyReply) => {
         const driverPayload: IDriverLogin = request.body as any;
-        const driverResult = await DriverService.getByUsername(driverPayload.username);
+        const driverResult = await DriverService.getByUsername(fastify, driverPayload.username);
         if (driverResult === null) {
             return reply.code(401).send({
                 code: INVALID_CREDENTIAL
             });
         }
 
-        if (await DriverService.comparePassword(driverPayload.password, driverResult.password)) {
-            const access_token = server.jwt.sign({
+        if (await DriverService.comparePassword(fastify, driverPayload.password, driverResult.password)) {
+            const access_token = fastify.jwt.sign({
                 id: driverResult._id.toHexString(),
                 userType: "driver"
             }, {
@@ -29,37 +29,37 @@ async function driverRoutes(server: FastifyInstance) {
             code: INVALID_CREDENTIAL
         });
     });
-    server.delete('/logout', async (request: FastifyRequest, reply: FastifyReply) => {
+    fastify.delete('/logout', async (request: FastifyRequest, reply: FastifyReply) => {
         reply.clearCookie('sr_access_token')
 
         return reply.send({ message: 'Logout successful' })
     });
 
-    server.post(
+    fastify.post(
         '/create',
-        {preHandler: [server.authenticate, server.hasRole(['super_admin'])]},
+        {preHandler: [fastify.authenticate, fastify.hasRole(['super_admin'])]},
         async (request: FastifyRequest<{ Body: IDriver }>, reply: FastifyReply) => {
             try {
-                const driver = await DriverService.createDriver(request.body);
+                const driver = await DriverService.createDriver(fastify, request.body);
                 return reply.send(driver);
             } catch (error) {
                 return reply.status(500).send(error);
             }
         });
 
-    server.get(
+    fastify.get(
         '/me',
-        {preHandler: [server.authenticate, server.hasRole(['driver'])]},
+        {preHandler: [fastify.authenticate, fastify.hasRole(['driver'])]},
         async (request: FastifyRequest, reply: FastifyReply) => {
             return reply.send(request.user);
         });
 
-    server.get(
+    fastify.get(
         '/:id',
-        {preHandler: [server.authenticate, server.hasRole(['super_admin', 'operator'])]},
+        {preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])]},
         async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
             try {
-                const driver = await DriverService.getDriverById(request.params.id);
+                const driver = await DriverService.getDriverById(fastify, request.params.id);
                 if (!driver) {
                     return reply.status(404).send({message: 'Driver not found'});
                 } else {
@@ -70,37 +70,37 @@ async function driverRoutes(server: FastifyInstance) {
             }
         });
 
-    server.get(
+    fastify.get(
         '/',
-        {preHandler: [server.authenticate, server.hasRole(['super_admin', 'operator'])]},
+        {preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])]},
         async (_request: FastifyRequest, reply: FastifyReply) => {
             try {
-                const drivers = await DriverService.getAllDrivers();
+                const drivers = await DriverService.getAllDrivers(fastify);
                 return reply.send(drivers);
             } catch (error) {
                 return reply.status(500).send(error);
             }
         }
     );
-    server.get(
+    fastify.get(
         '/my-rides',
-        {preHandler: [server.authenticate, server.hasRole(['driver'])]},
+        {preHandler: [fastify.authenticate, fastify.hasRole(['driver'])]},
         async (request: FastifyRequest, reply: FastifyReply) => {
             try {
                 const user: any = request.user;
-                const rides = await DriverService.myRides(user._id);
+                const rides = await DriverService.myRides(fastify, user._id);
                 return reply.send(rides);
             } catch (error) {
                 return reply.status(500).send(error);
             }
         });
-    server.put(
+    fastify.put(
         '/set-end-price/:id',
-        {preHandler: [server.authenticate, server.hasRole(['driver'])]},
+        {preHandler: [fastify.authenticate, fastify.hasRole(['driver'])]},
         async (request: FastifyRequest<{ Params: { id: string }, Body: { endPrice: string } }>, reply: FastifyReply) => {
             try {
                 const user: any = request.user;
-                const updatedRide: any = await DriverService.setEndPrice(user._id, request.params.id, request.body.endPrice);
+                const updatedRide: any = await DriverService.setEndPrice(fastify, user._id, request.params.id, request.body.endPrice);
                 if (!updatedRide) {
                     return reply.status(404).send({message: 'Ride not found'});
                 } else {
@@ -110,15 +110,15 @@ async function driverRoutes(server: FastifyInstance) {
                 return reply.status(500).send(error);
             }
         });
-    server.put(
+    fastify.put(
         '/:id',
-        {preHandler: [server.authenticate, server.hasRole(['super_admin'])]},
+        {preHandler: [fastify.authenticate, fastify.hasRole(['super_admin'])]},
         async (request: FastifyRequest<{
             Params: { id: string },
             Body: IDriver
         }>, reply: FastifyReply) => {
             try {
-                const updatedDriver = await DriverService.updateDriver(request.params.id, request.body);
+                const updatedDriver = await DriverService.updateDriver(fastify, request.params.id, request.body);
                 if (!updatedDriver) {
                     return reply.status(404).send({message: 'Driver not found'});
                 } else {
@@ -129,12 +129,12 @@ async function driverRoutes(server: FastifyInstance) {
             }
         });
 
-    server.delete(
+    fastify.delete(
         '/:id',
-        {preHandler: [server.authenticate, server.hasRole(['super_admin'])]},
+        {preHandler: [fastify.authenticate, fastify.hasRole(['super_admin'])]},
         async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
             try {
-                const deletedDriver = await DriverService.deleteDriver(request.params.id);
+                const deletedDriver = await DriverService.deleteDriver(fastify, request.params.id);
                 if (!deletedDriver) {
                     return reply.status(404).send({message: 'Driver not found'});
                 } else {

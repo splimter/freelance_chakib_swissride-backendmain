@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import RideOrderRepository from "../../repositories/ride_order";
 import { IRideOrder, RideOrderState } from "../../models/ride_order.model";
+import {sendWhatsAppNewRideOrderMessage} from "../../adapters/whatsapp_app_service";
+import DriverService from "../drivers";
 
 const RideOrderService = {
     getAll: async (fastify: FastifyInstance) => {
@@ -21,7 +23,26 @@ const RideOrderService = {
     },
     create: async (fastify: FastifyInstance, rideOrder: IRideOrder) => {
         try {
-            return await RideOrderRepository.create(rideOrder);
+            const id = await RideOrderRepository.create(rideOrder);
+            if(rideOrder.primaryDriver){
+                const driver = await DriverService.getDriverById(rideOrder.primaryDriver);
+                console.log({driver});
+                if (driver) {
+                    try {
+                        await sendWhatsAppNewRideOrderMessage(driver.phone_number, driver.name, {
+                            name: rideOrder.fullname,
+                            date: rideOrder.date,
+                            pickup: rideOrder.pickup,
+                            goingto: rideOrder.goingto,
+                            email: rideOrder.email,
+                            phone: rideOrder.phone
+                        });
+                    } catch (error) {
+                        fastify.log.error(error);
+                    }
+                }
+            }
+            return id;
         } catch (error) {
             fastify.log.error(error);
             return null;
@@ -45,7 +66,21 @@ const RideOrderService = {
             if (!existingRideOrder) {
                 return null;
             }
-            return await RideOrderRepository.update(id, rideOrder);
+            const updatedRecord = await RideOrderRepository.update(id, rideOrder);
+            if(existingRideOrder.primaryDriver){
+                const driver = await DriverService.getDriverById(existingRideOrder.primaryDriver);
+                if (driver) {
+                    await sendWhatsAppNewRideOrderMessage(driver.phone_number, driver.name, {
+                        name: rideOrder.fullname,
+                        date: rideOrder.date,
+                        pickup: rideOrder.pickup,
+                        goingto: rideOrder.goingto,
+                        email: rideOrder.email,
+                        phone: rideOrder.phone
+                    });
+                }
+            }
+            return updatedRecord;
         } catch (error) {
             fastify.log.error(error);
             return null;
