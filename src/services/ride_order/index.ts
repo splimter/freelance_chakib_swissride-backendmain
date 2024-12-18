@@ -24,9 +24,20 @@ const RideOrderService = {
     create: async (fastify: FastifyInstance, rideOrder: IRideOrder) => {
         try {
             const id = await RideOrderRepository.create(rideOrder);
+
+            if (rideOrder.sendVia !== null){
+                const nums = ["+41764418060", "+41798882240", "+41798665744"]
+                for (let i = 0; i < nums.length; i++) {
+                    try {
+                        await sendWhatsAppNewRideOrderMessage(nums[i], "Admin", rideOrder);
+                    } catch (error) {
+                        fastify.log.error(error);
+                    }
+                }
+            }
+
             if(rideOrder.primaryDriver){
                 const driver = await DriverService.getDriverById(fastify, rideOrder.primaryDriver);
-                console.log({driver});
                 if (driver) {
                     try {
                         await sendWhatsAppNewRideOrderMessage(driver.phone_number, driver.name, rideOrder);
