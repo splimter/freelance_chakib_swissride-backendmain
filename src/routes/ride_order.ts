@@ -49,9 +49,6 @@ const riderOrderRoutes = async (fastify: FastifyInstance) => {
     );
     fastify.post(
         '/',
-        {
-            preHandler: [fastify.authenticate]
-        },
         async (request: FastifyRequest, reply: FastifyReply) => {
             const rideOrder: IRideOrder = request.body as any;
             const rideOrderId = await RideOrderService.create(fastify, rideOrder);
