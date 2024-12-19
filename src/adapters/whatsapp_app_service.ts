@@ -118,13 +118,13 @@ export async function sendWhatsAppCredentialsMessage(phone_number: string, name:
 export async function sendWhatsAppNewRideOrderMessage(phone_number: string, driverUsername: string, order: IRideOrder): Promise<void> {
     try {
         const url = `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`;
-        if (!phone_number.startsWith('+')) {
-            if (phone_number.startsWith('0')) {
-                phone_number = phone_number.substring(1);
-            }
+        if (phone_number.startsWith('0')) {
+            phone_number = phone_number.substring(1);
+            phone_number = `+41${phone_number}`;
+        } else if (!phone_number.startsWith('+')) {
             phone_number = `+41${phone_number}`;
         }
-        // TODO - Add the order details to the message
+
         const payload = {
             "messaging_product": "whatsapp",
             "to": phone_number,
@@ -148,11 +148,11 @@ export async function sendWhatsAppNewRideOrderMessage(phone_number: string, driv
                             },
                             {
                                 "type": "text",
-                                "text": order.phone
+                                "text": order.phone ?? 'N/A'
                             },
                             {
                                 "type": "text",
-                                "text": order.email
+                                "text": order.email ?? 'N/A'
                             },
                             {
                                 "type": "text",
