@@ -50,7 +50,7 @@ const riderOrderRoutes = async (fastify: FastifyInstance) => {
     fastify.post(
         '/',
         {
-            preHandler: [fastify.authenticate, fastify.hasRole(['super_admin', 'operator'])]
+            preHandler: [fastify.authenticate]
         },
         async (request: FastifyRequest, reply: FastifyReply) => {
             const rideOrder: IRideOrder = request.body as any;
