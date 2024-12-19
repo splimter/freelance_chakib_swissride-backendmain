@@ -148,11 +148,11 @@ export async function sendWhatsAppNewRideOrderMessage(phone_number: string, driv
                             },
                             {
                                 "type": "text",
-                                "text": order.phone ?? 'N/A'
+                                "text": order.phone || 'N/A'
                             },
                             {
                                 "type": "text",
-                                "text": order.email ?? 'N/A'
+                                "text": order.email || 'N/A'
                             },
                             {
                                 "type": "text",
@@ -231,19 +231,19 @@ export async function sendWhatsAppUpdateRideOrderMessage(
                             },
                             {
                                 "type": "text",
-                                "text": oldOrder.phone
+                                "text": oldOrder.phone ||  'N/A'
                             },
                             {
                                 "type": "text",
-                                "text": newOrder.phone
+                                "text": newOrder.phone ||  'N/A'
                             },
                             {
                                 "type": "text",
-                                "text": oldOrder.email
+                                "text": oldOrder.email ||  'N/A'
                             },
                             {
                                 "type": "text",
-                                "text": newOrder.email
+                                "text": newOrder.email ||  'N/A'
                             },
                             {
                                 "type": "text",
