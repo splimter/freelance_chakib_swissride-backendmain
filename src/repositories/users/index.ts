@@ -13,11 +13,19 @@ const UserRepository = {
         return User.find({[field as any]: value}).select('-password');
     },
     create: async (entity: IUser) => {
+        entity.username = entity.username.trim();
+        entity.phone_number = entity.phone_number.replaceAll(" ", "");
         const user = new User(entity);
         return await user.save();
     },
     updateById: async (id: string, entity: IUser) => {
         try {
+            if(entity.username){
+                entity.username = entity.username.trim();
+            }
+            if(entity.phone_number){
+                entity.phone_number = entity.phone_number.replaceAll(" ", "");
+            }
             return await User.findByIdAndUpdate(id, entity, {new: true});
         } catch (error) {
             return {

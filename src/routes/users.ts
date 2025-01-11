@@ -37,11 +37,11 @@ export default async function userRoutes (fastify: FastifyInstance) {
         preHandler: [fastify.authenticate, fastify.hasRole(['super_admin'])]
     }, async (request: FastifyRequest, reply: FastifyReply) => {
         const user: IUser = request.body as any;
-        const userId = await UserServices.create(fastify, user);
-        if (userId) {
-            return reply.code(201).send({ id: userId._id });
+        const response = await UserServices.create(fastify, user);
+        if (response.isError) {
+            return reply.code(400).send(response);
         } else {
-            return reply.code(400).send({ error: 'Failed to add user' });
+            return reply.code(201).send({ id: response._id });
         }
     });
     fastify.put(
@@ -53,8 +53,8 @@ export default async function userRoutes (fastify: FastifyInstance) {
                 const user = request.body;
                 const result = await UserServices.update(fastify, userId, user);
 
-                if (result.error === true) {
-                    return reply.status(404).send({ message: 'Failed to update a user!', error: result });
+                if (result.isError) {
+                    return reply.status(400).send(result);
                 } else {
                     return reply.send({ message: 'User updated successfully' });
                 }
@@ -93,13 +93,12 @@ export default async function userRoutes (fastify: FastifyInstance) {
         { preHandler: [fastify.authenticate, fastify.hasRole(['super_admin'])] },
         async (request: FastifyRequest<{ Body: IUser }>, reply: FastifyReply) => {
             try {
-                const operator = await UserServices.createOperator(fastify, request.body);
-                if (operator) {
-                    return reply.send(operator);
+                const result = await UserServices.createOperator(fastify, request.body);
+                if (result.isError) {
+                    return reply.status(400).send(result);
                 } else {
-                    return reply.status(400).send({ message: 'Failed to add operator' });
+                    return reply.send({ message: 'User updated successfully' });
                 }
-
             } catch (error) {
                 return reply.status(500).send(error);
             }

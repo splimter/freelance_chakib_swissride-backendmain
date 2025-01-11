@@ -4,6 +4,7 @@ import {IUser} from "../../models/user.model";
 import bcrypt from "bcrypt";
 import {sendEmailAccountCreation} from "../../adapters/sendgrid_app_service";
 import {sendWhatsAppCredentialsMessage, sendWhatsAppWelcomeMessage} from "../../adapters/whatsapp_app_service";
+import {mongoDBErrorHandler} from "../../utils/error_handler";
 
 const saltRounds = 10;
 
@@ -14,7 +15,7 @@ const UserServices = {
             return await UserRepository.create(user);
         } catch (error) {
             fastify.log.error(error);
-            return null;
+            return mongoDBErrorHandler(error);
         }
     },
     getByUsername: async (fastify: FastifyInstance, username: string, withPassword=false) => {
@@ -41,7 +42,7 @@ const UserServices = {
             return await UserRepository.updateById(id, user);
         } catch (error) {
             fastify.log.error(error);
-            return error;
+            return mongoDBErrorHandler(error);
         }
     },
     delete: async (fastify: FastifyInstance, id: string) => {
@@ -74,7 +75,7 @@ const UserServices = {
             return response;
         } catch (error) {
             fastify.log.error(error);
-            return null;
+            return mongoDBErrorHandler(error);
         }
     },
     getAllOperators: async (fastify: FastifyInstance)=> {

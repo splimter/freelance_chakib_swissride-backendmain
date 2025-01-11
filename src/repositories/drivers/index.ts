@@ -5,6 +5,8 @@ const DriverRepository = {
         return Driver.find();
     },
     create: async (entity: IDriver) => {
+        entity.username = entity.username.trim();
+        entity.phone_number = entity.phone_number.replaceAll(" ", "");
         const driver = new Driver(entity);
         return await driver.save();
     },
@@ -12,6 +14,12 @@ const DriverRepository = {
         return Driver.findOne({[field as any]: value});
     },
     update: async (id: string, entity: IDriver) => {
+        if(entity.phone_number){
+            entity.phone_number = entity.phone_number.replaceAll(" ", "");
+        }
+        if(entity.username){
+            entity.username = entity.username.trim();
+        }
         return Driver.findByIdAndUpdate(id, entity, { new: true });
     },
     delete: async (id: string) => {

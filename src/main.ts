@@ -44,7 +44,7 @@ server.register(fastifyCors, {
             return;
         }
         const hostname = new URL(origin).hostname;
-        if(['192.168.1.4', 'localhost', 'www.hop-taxi.ch'].includes(hostname)){
+        if(['192.168.1.135', 'localhost', 'www.hop-taxi.ch'].includes(hostname)){
             cb(null, true)
             return
         }
