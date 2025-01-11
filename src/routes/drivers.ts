@@ -88,7 +88,8 @@ async function driverRoutes(fastify: FastifyInstance) {
         async (request: FastifyRequest, reply: FastifyReply) => {
             try {
                 const user: any = request.user;
-                const rides = await DriverService.myRides(fastify, user._id);
+                console.log({user});
+                const rides = await DriverService.myRides(fastify, user._id, user.type);
                 return reply.send(rides);
             } catch (error) {
                 return reply.status(500).send(error);

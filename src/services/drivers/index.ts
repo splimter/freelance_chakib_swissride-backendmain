@@ -1,6 +1,6 @@
 import DriverRepository from '../../repositories/drivers';
 import RideOrderRepository from '../../repositories/ride_order';
-import {IDriver} from '../../models/driver.model';
+import {DriverType, IDriver} from '../../models/driver.model';
 import bcrypt from "bcrypt";
 import {sendEmailAccountCreation} from "../../adapters/sendgrid_app_service";
 import {sendWhatsAppCredentialsMessage, sendWhatsAppWelcomeMessage} from "../../adapters/whatsapp_app_service";
@@ -87,16 +87,17 @@ const DriverService = {
             return null;
         }
     },
-    myRides: async (fastify: FastifyInstance, id: string) => {
+    myRides: async (fastify: FastifyInstance, id: string, driverType: DriverType) => {
         try {
-            const primary = await RideOrderRepository.getAllBy("primaryDriver", id);
-            const secondary = await RideOrderRepository.getAllBy("secondaryDriver", id);
-            const aux = await RideOrderRepository.getAllBy("auxDriver", id);
-            return {
-                primary,
-                secondary,
-                aux
+            let _entryType = "";
+            if(driverType === DriverType.Primary) {
+                _entryType = "primaryDriver";
+            } else if(driverType === DriverType.Secondary) {
+                _entryType = "secondaryDriver";
+            } else if(driverType === DriverType.Tertiary) {
+                _entryType = "auxDriver";
             }
+            return await RideOrderRepository.getAllBy(_entryType, id);
         } catch (error) {
             fastify.log.error(error);
             return null;

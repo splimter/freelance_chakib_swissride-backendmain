@@ -39,8 +39,12 @@ const server = fastify(
 // Register CORS
 server.register(fastifyCors, {
     origin: (origin, cb) => {
-        const hostname = new URL(origin).hostname
-        if(['192.168.1.135', 'localhost', 'www.hop-taxi.ch'].includes(hostname)){
+        if (!origin) {
+            cb(null, true);
+            return;
+        }
+        const hostname = new URL(origin).hostname;
+        if(['192.168.1.4', 'localhost', 'www.hop-taxi.ch'].includes(hostname)){
             cb(null, true)
             return
         }
@@ -63,6 +67,7 @@ server.register(fastifyCookie, {
     secret: configENV.JWT_SECRET,
     hook: 'preHandler',
 })
+
 
 server.decorate("authenticate", async function(request, reply) {
     try {
@@ -97,7 +102,6 @@ server.decorate("authenticate", async function(request, reply) {
         }
     }
 })
-
 server.decorate("hasRole", function(roles: string[]) {
     return async function(request, reply: any) {
         if (!roles.includes(request.user._doc.role)) {
@@ -107,6 +111,7 @@ server.decorate("hasRole", function(roles: string[]) {
         }
     }
 })
+
 
 server.addHook('onSend', function (_request, reply, payload, next) {
     const logData = {
@@ -132,10 +137,10 @@ server.addHook('onSend', function (_request, reply, payload, next) {
 })
 
 
-
 server.register(userRoutes, { prefix: '/api/v1/users' });
 server.register(riderOrderRoutes, { prefix: '/api/v1/rides' });
 server.register(driverRoutes, { prefix: '/api/v1/drivers' });
+
 
 server.listen({ host: configENV.HOST, port: parseInt(configENV.PORT, 10) }, (err, address) => {
     if (err) {

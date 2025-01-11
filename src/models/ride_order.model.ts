@@ -4,8 +4,8 @@ import * as mongoose from "mongoose";
 export enum RideOrderState {
     Pending = 'pending',
     Accepted = 'accepted',
-    InProgress = 'in-progress',
-    Done = 'Done',
+    InProgress = 'inProgress',
+    Done = 'done',
     Rejected = 'rejected'
 }
 
