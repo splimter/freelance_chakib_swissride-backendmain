@@ -171,7 +171,7 @@ export async function sendWhatsAppNewRideOrderMessage(phone_number: string, driv
                 ]
             }
         };
-        console.log({payload: payload.template.components[0].parameters});
+
         const headers = {
             Authorization: `Bearer ${TOKEN}`,
             'Content-Type': 'application/json',
@@ -201,10 +201,10 @@ export async function sendWhatsAppUpdateRideOrderMessage(
 ): Promise<void> {
     try {
         const url = `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`;
-        if (!phone_number.startsWith('+')) {
-            if (phone_number.startsWith('0')) {
-                phone_number = phone_number.substring(1);
-            }
+        if (phone_number.startsWith('0')) {
+            phone_number = phone_number.substring(1);
+            phone_number = `+41${phone_number}`;
+        } else if (!phone_number.startsWith('+')) {
             phone_number = `+41${phone_number}`;
         }
 

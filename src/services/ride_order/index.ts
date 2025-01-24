@@ -26,6 +26,7 @@ const RideOrderService = {
             const id = await RideOrderRepository.create(rideOrder);
 
             if (rideOrder.sendVia !== null){
+                //TODO rideOrder.phone
                 const nums = ["+41764418060", "+41798882240", "+41798665744"]
                 for (let i = 0; i < nums.length; i++) {
                     try {
